@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Minseo Kim — robotics, perception, localization and SLAM." />
+  <title>Minseo Kim</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a class="brand" href="./">Minseo Kim</a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="notes/">Notes</a>
+        <a href="https://github.com/Leah-MinseoKim">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="about">
+      <div>
+        <img class="avatar" src="assets/profile.jpg" alt="Portrait of Minseo Kim" />
+      </div>
+      <div>
+        <h1 class="name">Minseo Kim</h1>
+        <div class="role">Mechanical Engineering Student · Robotics / Perception / Localization</div>
+        <div class="icon-links">
+          <a href="https://github.com/Leah-MinseoKim">GitHub</a>
+          <a href="#" id="copy-email" title="Copy email address">Email</a>
+          <a href="#projects">Projects</a>
+        </div>
+        <p class="lede">I am a mechanical engineering student interested in SLAM, robot perception, and autonomous navigation. Through various robotics projects, I have been exploring these areas with a focus on building reliable autonomous robotic systems.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Research Interests</h2>
+      <ul class="interests">
+      <li>SLAM</li>
+      <li>Robot Perception</li>
+      <li>Autonomous Navigation</li>
+    </ul>
+    </section>
+
+    
+<section class="section">
+  <h2 class="section-title">Education</h2>
+
+  <div class="timeline-row">
+    <div class="timeline-date">2024.03 – Present</div>
+    <div class="timeline-main">
+      <strong>Sookmyung Women's University</strong><br>
+      <span style="color:#666">B.S. in Mechanical Engineering</span>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <h2 class="section-title">Experience</h2>
+
+  <div class="timeline-row">
+    <div class="timeline-date">2026.01 – Present</div>
+    <div class="timeline-main">
+      <strong>Undergraduate Researcher in
+        <a href="https://sites.google.com/sookmyung.ac.kr/sprint-lab"
+           target="_blank" rel="noopener noreferrer">SPRINT LAB</a>
+      </strong><br>
+      <span style="color:#666">Sookmyung Women's University</span>
+    </div>
+  </div>
+</section>
+
+    <section class="section" id="projects">
+      <h2 class="section-title">Projects</h2>
+      <div class="project-list">
+        <article class="project-row">
+          <div class="project-index">01</div>
+          <div>
+            <h3 class="project-title"><a href="projects/unitree-go2/">Unitree Go2 BEV Navigation</a></h3>
+            <p class="project-summary">Exploring short-range bird's-eye-view perception and navigation representations for Unitree Go2, starting from a BEVFormer pipeline trained on nuScenes and adapting it to robot-specific camera and odometry data.</p>
+            <div class="tags"><span class="tag">BEVFormer</span><span class="tag">nuScenes</span><span class="tag">Unitree Go2</span><span class="tag">ROS2</span><span class="tag">PyTorch</span></div>
+          </div>
+          <div class="project-date">2026.01 – 2026.03</div>
+        </article>
+
+        <article class="project-row">
+          <div class="project-index">02</div>
+          <div>
+            <h3 class="project-title"><a href="projects/pipe-slam/">Pipe Robot SLAM</a></h3>
+            <p class="project-summary">Localization in repetitive pipe environments under severe axial degeneracy, combining structural joint perception, re-identification, geometric verification, and factor-graph optimization.</p>
+            <div class="tags"><span class="tag">FAST-LIVO2</span><span class="tag">VINS</span><span class="tag">GTSAM</span><span class="tag">EDCircles</span><span class="tag">LoFTR</span><span class="tag">GICP</span></div>
+          </div>
+          <div class="project-date">2026.04 – Present</div>
+        </article>
+      </div>
+    </section>
+
+    
+<section class="section">
+  <h2 class="section-title">Study Notes</h2>
+
+  <div class="notes-grid">
+    <a class="note-link" href="notes/#slam">
+      <span>SLAM</span>
+      <span>→</span>
+    </a>
+
+    <a class="note-link" href="notes/#ros2">
+      <span>ROS2</span>
+      <span>→</span>
+    </a>
+  </div>
+</section>
+
+  </main>
+  <footer>© 2026 Minseo Kim. Built as a lightweight academic homepage for GitHub Pages.</footer>
+
+<script>
+  const emailLink = document.getElementById('copy-email');
+  const email = 'shallwesit14743@sookmyung.ac.kr';
+
+  if (emailLink) {
+    emailLink.addEventListener('click', async (event) => {
+      event.preventDefault();
+
+      try {
+        await navigator.clipboard.writeText(email);
+        emailLink.textContent = 'E-mail copied!';
+        setTimeout(() => {
+          emailLink.textContent = 'Email';
+        }, 1200);
+      } catch (error) {
+        console.error('Could not copy email:', error);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
