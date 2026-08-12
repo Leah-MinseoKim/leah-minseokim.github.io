@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unitree Go2 BEV Navigation — Minseo Kim</title>
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+<nav class="site-nav"><div class="nav-inner"><a class="brand" href="../../">Minseo Kim</a><div class="nav-links"><a href="../../#projects">Projects</a><a href="../../notes/">Notes</a><a href="https://github.com/Leah-MinseoKim">GitHub</a></div></div></nav>
+<main><article class="article">
+<a class="back" href="../../#projects">← Back to Projects</a>
+<div class="eyebrow">Project 01 · Robot Perception</div>
+<h1>Unitree Go2 BEV Navigation</h1>
+<p class="subtitle">Adapting BEVFormer-style perception from the nuScenes domain to short-range environment representation and navigation experiments on Unitree Go2.</p>
+<div class="meta-line"><span>2026.01 – 2026.03</span><span>BEVFormer</span><span>nuScenes</span><span>ROS2</span><span>PyTorch</span><span>OpenCV</span></div>
+
+<div class="callout"><strong>Status.</strong> Experimental research / learning project. Perception, mapping, and navigation-oriented components were developed and tested in stages, but a complete end-to-end autonomous navigation stack was not fully integrated.</div>
+
+<h2>Overview</h2>
+<p>The project began with a camera-based BEVFormer perception pipeline trained on the nuScenes dataset. I explored how a perception model designed for autonomous-driving scenarios could be adapted to a smaller quadruped robot with a different camera height, field of view, motion pattern, and navigation scale.</p>
+<div class="pipeline"><span class="pipe-step">nuScenes</span><span class="arrow">→</span><span class="pipe-step">BEVFormer</span><span class="arrow">→</span><span class="pipe-step">Go2 Adaptation</span><span class="arrow">→</span><span class="pipe-step">Temporal Consistency</span><span class="arrow">→</span><span class="pipe-step">Drivable Area</span><span class="arrow">→</span><span class="pipe-step">Global Map</span><span class="arrow">→</span><span class="pipe-step">Nav2 Export</span></div>
+
+<h2>1. Close-range BEV Adaptation</h2>
+<p>The BEV region was reduced for short-range mobile-robot navigation while maintaining a 50 × 50 grid. This increased the spatial detail around the robot instead of allocating most cells to distant regions.</p>
+<div class="metric-grid">
+  <div class="metric"><b>±51.2 m</b><small>Original-scale reference · 2.048 m/cell</small></div>
+  <div class="metric"><b>±25.6 m</b><small>First adaptation · 1.024 m/cell</small></div>
+  <div class="metric"><b>±10 m</b><small>Go2 close range · 0.4 m/cell</small></div>
+</div>
+<p>Camera-only perception was used, with Go2-oriented camera-height augmentation and a compact BEV region intended for local navigation.</p>
+
+<h2>2. Go2 ROS2 Bag & Odometry Pipeline</h2>
+<p>I built a dataset path for sequential Go2 ROS2 bag data. Camera frames and odometry are synchronized to create frame pairs, while the robot motion between frames is represented as ego-frame translation and yaw change.</p>
+<div class="pipeline"><span class="pipe-step">/camera/image_raw</span><span class="pipe-step">/odom</span><span class="arrow">→</span><span class="pipe-step">timestamp alignment</span><span class="arrow">→</span><span class="pipe-step">(frame t, frame t+k)</span><span class="arrow">+</span><span class="pipe-step">Δx, Δy, Δyaw</span></div>
+<p>The pipeline also includes a Go2-specific camera model and conversion of odometry into the motion representation used by the BEVFormer temporal pipeline.</p>
+
+<h2>3. Self-supervised Temporal Consistency</h2>
+<p>Because robot-specific data did not have dense nuScenes-style labels, I explored a self-supervised adaptation strategy based on temporal consistency. BEV predictions from two nearby frames are aligned using odometry and compared after ego-motion compensation.</p>
+<div class="pipeline"><span class="pipe-step">BEV(t)</span><span class="arrow">→</span><span class="pipe-step">ego-motion warp</span><span class="arrow">→</span><span class="pipe-step">KL consistency</span><span class="arrow">←</span><span class="pipe-step">BEV(t+k)</span></div>
+<p>The loss design included valid/FOV masks, confidence filtering, reduced weighting for moving-object classes, entropy regularization, and teacher anchoring / knowledge distillation to reduce collapse during adaptation.</p>
+
+<h2>4. Temporal Voting</h2>
+<p>Single-frame BEV predictions could contain unstable or hallucinated obstacle regions. To suppress these, past occupancy predictions were warped into the current ego frame using odometry and combined over a temporal window.</p>
+<div class="pipeline"><span class="pipe-step">BEV t−2</span><span class="pipe-step">BEV t−1</span><span class="pipe-step">BEV t</span><span class="arrow">→</span><span class="pipe-step">odometry alignment</span><span class="arrow">→</span><span class="pipe-step">majority voting</span><span class="arrow">→</span><span class="pipe-step">spatial filtering</span></div>
+
+<h2>5. Geometry-based IPM Experiment</h2>
+<p>I also explored a non-learning alternative for drivable-area detection using inverse perspective mapping (IPM). The same ground region observed from different robot poses should be photometrically consistent after odometry compensation if the flat-ground assumption is valid.</p>
+<div class="pipeline"><span class="pipe-step">Camera</span><span class="arrow">→</span><span class="pipe-step">IPM</span><span class="arrow">→</span><span class="pipe-step">BEV</span><span class="arrow">→</span><span class="pipe-step">multi-frame warp</span><span class="arrow">→</span><span class="pipe-step">consistency voting</span></div>
+<p>3D objects violate the ground-plane assumption and tend to become inconsistent across viewpoints, providing a geometric obstacle cue without a trained neural network.</p>
+
+<h2>6. Global Mapping & Nav2 Export</h2>
+<p>Local free-space estimates were transformed into a world frame using odometry and accumulated across frames. Cells were considered drivable only when repeated observations consistently supported free space.</p>
+<div class="pipeline"><span class="pipe-step">Local BEV</span><span class="arrow">→</span><span class="pipe-step">Temporal Vote</span><span class="arrow">→</span><span class="pipe-step">World Transform</span><span class="arrow">→</span><span class="pipe-step">Global Accumulation</span><span class="arrow">→</span><span class="pipe-step">PGM + YAML</span></div>
+<p>The final representation could be converted into free / occupied / unknown cells and exported in a Nav2-compatible PGM + YAML format.</p>
+
+<h2>What I Learned</h2>
+<ul>
+  <li>How domain assumptions change when moving a perception model from autonomous cars to a small robot.</li>
+  <li>Practical handling of ROS2 bag images, odometry, camera geometry, and temporal alignment.</li>
+  <li>BEV warping and temporal consistency under ego motion.</li>
+  <li>The difference between learned semantic perception and geometry-based drivable-area estimation.</li>
+  <li>Why perception output alone is not yet a complete navigation system.</li>
+</ul>
+
+<h2>Repository</h2>
+<p><a href="https://github.com/Leah-MinseoKim/unitree_go2_bev_navigation">GitHub repository</a> <span style="color:#777">(visibility may be private until the project is cleaned for public release)</span></p>
+</article></main>
+<footer>© 2026 Minseo Kim</footer>
+</body></html>
