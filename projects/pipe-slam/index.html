@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipe Robot SLAM — Minseo Kim</title>
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+<nav class="site-nav"><div class="nav-inner"><a class="brand" href="../../">Minseo Kim</a><div class="nav-links"><a href="../../#projects">Projects</a><a href="../../notes/">Notes</a><a href="https://github.com/Leah-MinseoKim">GitHub</a></div></div></nav>
+<main><article class="article">
+<a class="back" href="../../#projects">← Back to Projects</a>
+<div class="eyebrow">Project 02 · Ongoing Research</div>
+<h1>Pipe Robot SLAM</h1>
+<p class="subtitle">Localization under severe axial degeneracy in repetitive pipe environments using LiDAR, camera, IMU, structural joint observations, geometric verification, and factor-graph optimization.</p>
+<div class="meta-line"><span>2026 — Present</span><span>FAST-LIVO2</span><span>VINS</span><span>GTSAM</span><span>EDCircles</span><span>LoFTR</span><span>GICP</span></div>
+
+<div class="callout"><strong>Research question.</strong> How can localization remain globally consistent when the pipe provides strong radial geometry but very weak and repetitive information along its axis?</div>
+
+<h2>Problem</h2>
+<p>Inside a long cylindrical pipe, many LiDAR scans look nearly identical after translation along the pipe axis. This creates a degeneracy direction: lateral position and orientation may remain well constrained while axial motion can drift or collapse. Repeated visual appearance also makes loop correspondence ambiguous.</p>
+<div class="pipeline"><span class="pipe-step">LiDAR + Camera + IMU</span><span class="arrow">→</span><span class="pipe-step">FAST-LIVO2 / VINS</span><span class="arrow">→</span><span class="pipe-step">Axial Drift</span></div>
+
+<h2>1. Structural Joint Perception</h2>
+<p>Pipe joints provide sparse structural landmarks that are more informative along the degenerate direction. Video frames are processed with EDPF + EDCircles to detect circle / ellipse candidates. Frame-wise detections are linked over time rather than being accepted independently.</p>
+<div class="pipeline"><span class="pipe-step">Video</span><span class="arrow">→</span><span class="pipe-step">EDPF</span><span class="arrow">→</span><span class="pipe-step">EDCircles</span><span class="arrow">→</span><span class="pipe-step">Tracklets</span><span class="arrow">→</span><span class="pipe-step">Joint Hypotheses</span></div>
+
+<h2>2. 3D Joint Hypotheses & Association</h2>
+<p>Joint observations are projected into 3D using the current trajectory. Multiple observations are grouped into candidate physical joints, and outbound / return traversals are associated using geometry, ordering, persistence, and appearance cues.</p>
+<div class="pipeline"><span class="pipe-step">2D Joint Observation</span><span class="arrow">→</span><span class="pipe-step">3D Projection</span><span class="arrow">→</span><span class="pipe-step">Axis-density Clustering</span><span class="arrow">→</span><span class="pipe-step">Physical Joint IDs</span></div>
+
+<h2>3. Appearance Re-identification</h2>
+<p>Because neighboring joints can be visually similar, I explored annulus-based appearance descriptors. The circular neighborhood is unwrapped into a polar representation and divided around the circumference, where binary descriptors are compared with cyclic shifts and reverse-direction handling.</p>
+<div class="pipeline"><span class="pipe-step">Joint Annulus</span><span class="arrow">→</span><span class="pipe-step">Polar Image</span><span class="arrow">→</span><span class="pipe-step">32 angular bins</span><span class="arrow">→</span><span class="pipe-step">BRIEF signature</span><span class="arrow">→</span><span class="pipe-step">Hamming matching</span></div>
+
+<h2>4. Loop Proposal & Geometric Verification</h2>
+<p>Visual correspondence can still be ambiguous in a repetitive pipe. A later pipeline therefore separates proposal from verification: image matches generate loop candidates, and raw LiDAR scans are aligned with GICP. Candidate transforms are then compared globally so that only geometrically consistent constraints enter the backend.</p>
+<div class="pipeline"><span class="pipe-step">LoFTR proposals</span><span class="arrow">→</span><span class="pipe-step">GICP alignment</span><span class="arrow">→</span><span class="pipe-step">Transform consensus</span><span class="arrow">→</span><span class="pipe-step">Loop Factor</span></div>
+
+<h2>5. Factor-graph Backend</h2>
+<p>The frontend does not directly move the trajectory. Its purpose is to produce reliable structural constraints. GTSAM then combines these constraints with the original odometry / trajectory factors and solves for a globally more consistent trajectory.</p>
+<div class="pipeline"><span class="pipe-step">Odometry Factors</span><span class="pipe-step">Joint / Loop Factors</span><span class="arrow">→</span><span class="pipe-step">Robust Optimization</span><span class="arrow">→</span><span class="pipe-step">Corrected Trajectory</span></div>
+
+<h2>Research Experiments</h2>
+<div>
+  <div class="experiment"><div class="num">Experiment 01</div><h3>Joint-event Process-noise Injection</h3><p>Used confirmed joint events as one-time triggers that increase pipe-axis velocity covariance in FAST-LIVO2 without directly applying a pose correction. The goal was to find how much additional uncertainty the existing estimator could tolerate before becoming unstable.</p></div>
+  <div class="experiment"><div class="num">Experiment 02</div><h3>3D Joint Density Clustering</h3><p>Projected repeated image detections into 3D and studied density along the estimated pipe axis to recover candidate physical joint locations.</p></div>
+  <div class="experiment"><div class="num">Experiment 03</div><h3>BRIEF-based Joint Re-identification</h3><p>Compared outbound and return observations using polar-annulus binary descriptors, cyclic shifts, and Hamming cost.</p></div>
+  <div class="experiment"><div class="num">Experiment 04</div><h3>Joint Landmark / Relative-factor Backend</h3><p>Investigated ways to connect repeated observations of the same structural joint through shared or relative constraints in GTSAM.</p></div>
+  <div class="experiment"><div class="num">Experiment 05</div><h3>LoFTR + GICP Global Consensus</h3><p>Generated multiple image loop proposals, verified each in 3D, grouped similar correction transforms, and selected a globally consistent factor set.</p></div>
+</div>
+
+<h2>Evaluation Plan</h2>
+<p>The evaluation is designed to separate detector behavior from full-backend performance. Useful measurements include outbound/return joint residuals, trajectory change, repeated-scan point-cloud consistency, and voxel-level overlap at multiple resolutions.</p>
+<div class="metric-grid">
+  <div class="metric"><b>Trajectory</b><small>Before / after correction</small></div>
+  <div class="metric"><b>Residual</b><small>Joint & loop consistency</small></div>
+  <div class="metric"><b>3D overlap</b><small>Outbound vs return scans</small></div>
+</div>
+
+<h2>Current Direction</h2>
+<p>The current emphasis is on making the frontend conservative: many visually plausible loop candidates exist inside repeated pipe geometry, so a good backend factor must be supported by both local geometric alignment and global correction consensus.</p>
+<p>This page is intentionally maintained as a living research record. Methods that were tested and later replaced are retained as experiments rather than presented as final contributions.</p>
+</article></main>
+<footer>© 2026 Minseo Kim</footer>
+</body></html>
