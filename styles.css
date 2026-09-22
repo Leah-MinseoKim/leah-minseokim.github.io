@@ -63,7 +63,11 @@ main { max-width: var(--max); margin: 0 auto; padding: 56px 24px 72px; }
 .timeline { display: grid; gap: 18px; }
 .timeline-row { display: grid; grid-template-columns: 130px 1fr; gap: 22px; }
 .timeline-date { color: var(--muted); font-size: 14px; padding-top: 2px; }
-.timeline-main strong { font-weight: 650; }
+.timeline-main > strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 500;
+}
 .project-list { display: grid; gap: 0; }
 .project-row {
   display: grid; grid-template-columns: 132px 1fr 135px; gap: 24px;
