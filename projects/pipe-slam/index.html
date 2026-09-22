@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipe Robot SLAM — Minseo Kim</title>
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+<nav class="site-nav"><div class="nav-inner"><a class="brand" href="../../">Minseo Kim</a><div class="nav-links"><a href="../../#projects">Projects</a><a href="../../notes/">Notes</a><a href="https://github.com/Leah-MinseoKim">GitHub</a></div></div></nav>
+<main><article class="article">
+<a class="back" href="../../#projects">← Back to Projects</a>
+<div class="eyebrow">Project 02 · Undergraduate Research</div>
+<h1>Pipe Robot SLAM</h1>
+<p class="subtitle">Landmark recognition and drift correction for autonomous localization in geometrically degenerate pipe and tunnel environments.</p>
+<div class="meta-line"><span>2026.04 – Present</span><span>ROS1</span><span>LiDAR</span><span>Geometric Descriptor</span><span>Place Recognition</span><span>Pose Graph Optimization</span></div>
+
+<div class="callout"><strong>Research question.</strong> How can a robot recover longitudinal drift when locally similar pipe geometry provides almost no constraint along the direction of travel?</div>
+
+<h2>Overview</h2>
+<p>Long pipes and tunnels are highly repetitive along their longitudinal axis. Local LiDAR registration can remain consistent laterally while accumulating large position error along this weakly constrained direction. This project focuses on recognizing cross-sectional structural landmarks and using them as metric constraints for trajectory correction.</p>
+<div class="pipeline"><span class="pipe-step">ROS1 Robot</span><span class="arrow">→</span><span class="pipe-step">LiDAR + IMU</span><span class="arrow">→</span><span class="pipe-step">Landmark Extraction</span><span class="arrow">→</span><span class="pipe-step">Descriptor Matching</span><span class="arrow">→</span><span class="pipe-step">Geometric Verification</span><span class="arrow">→</span><span class="pipe-step">Pose Graph</span></div>
+
+<h2>1. Degeneracy-aligned Landmark Extraction</h2>
+<p>Consecutive LiDAR scans are accumulated in a common local frame and the longitudinal corridor axis is estimated from the local point cloud. Structural boundaries such as pipe joints and rings are detected from axial surface variations and represented as cross-sectional landmarks orthogonal to the degenerate direction.</p>
+<div class="pipeline"><span class="pipe-step">Local Scan Accumulation</span><span class="arrow">→</span><span class="pipe-step">Axis Estimation</span><span class="arrow">→</span><span class="pipe-step">Boundary Detection</span><span class="arrow">→</span><span class="pipe-step">Reference Contour</span></div>
+
+<h2>2. Geometric Descriptor</h2>
+<p>I worked on a degeneracy-aligned contour descriptor that unwraps the neighborhood around each cross-sectional boundary into a 2D chart. Each observed cell stores a signed normal offset from a fitted reference contour, preserving subtle surface variations that help distinguish landmarks with nearly identical cross-sectional profiles.</p>
+<div class="pipeline"><span class="pipe-step">Boundary Neighborhood</span><span class="arrow">→</span><span class="pipe-step">Contour Coordinates</span><span class="arrow">→</span><span class="pipe-step">2D Unwrapping</span><span class="arrow">→</span><span class="pipe-step">Signed Offset Descriptor</span></div>
+
+<h2>3. Invariant Matching</h2>
+<p>Matching is designed to remain robust to reverse traversal, partial surface coverage, and small reference-contour errors. Candidate correspondences are evaluated under both relative headings, comparison is restricted to mutually observed cells, and low-order field distortions are removed before local patch matching.</p>
+<div class="pipeline"><span class="pipe-step">0° / 180° Heading</span><span class="pipe-step">Valid-cell Masking</span><span class="pipe-step">Field Normalization</span><span class="arrow">→</span><span class="pipe-step">Local Patch Matching</span></div>
+
+<h2>4. Geometric Verification</h2>
+<p>Descriptor similarity alone can still produce false matches in repetitive tunnels. Mutual nearest-neighbor patch correspondences therefore undergo local geometric verification, and only a unique candidate with sufficient spatial consensus is accepted as a landmark association.</p>
+<div class="pipeline"><span class="pipe-step">Patch Correspondences</span><span class="arrow">→</span><span class="pipe-step">Mutual Nearest Neighbors</span><span class="arrow">→</span><span class="pipe-step">Geometric Consensus</span><span class="arrow">→</span><span class="pipe-step">Verified Landmark Pair</span></div>
+
+<h2>5. Pose-graph Drift Correction</h2>
+<p>Verified landmark pairs provide geometric factors that constrain cross-section position and corridor-axis alignment. These factors are optimized together with the original relative odometry constraints under a robust loss, reducing accumulated longitudinal drift without imposing unsupported constraints around the common corridor axis.</p>
+<div class="pipeline"><span class="pipe-step">Odometry Factors</span><span class="pipe-step">Landmark Factors</span><span class="arrow">→</span><span class="pipe-step">Robust Pose Graph</span><span class="arrow">→</span><span class="pipe-step">Corrected Trajectory</span></div>
+
+<h2>6. Robot & Sensor Integration</h2>
+<p>The field inspection robot was operated with ROS1 and used LiDAR and IMU sensing in underground pipe experiments. LiDAR–inertial motion estimates are used for scan accumulation, while gravity provides a consistent transverse orientation for the descriptor.</p>
+
+<h2>Evaluation</h2>
+<p>The method is evaluated on the public GEODE benchmark and on field recordings from underground pipe inspections. The field dataset includes seven outbound/return sequences in polyethylene and concrete pipes with diameters from 400 to 800 mm.</p>
+<div class="metric-grid">
+  <div class="metric"><b>7</b><small>Field pipe sequences</small></div>
+  <div class="metric"><b>400–800 mm</b><small>Pipe diameters</small></div>
+  <div class="metric"><b>99.3%</b><small>Maximum endpoint-error reduction in the reported field tests</small></div>
+</div>
+
+<h2>What I Worked On</h2>
+<ul>
+  <li>ROS1-based robot operation and LiDAR/IMU data handling for underground pipe experiments.</li>
+  <li>Automatic estimation of the geometrically weak corridor direction.</li>
+  <li>Cross-sectional landmark detection and contour-based geometric descriptor design.</li>
+  <li>Direction-invariant landmark matching with partial-observation handling.</li>
+  <li>Geometric verification to suppress false associations in repetitive environments.</li>
+  <li>Pose-graph constraints for correcting longitudinal drift from verified landmark matches.</li>
+</ul>
+
+</article></main>
+<footer>© 2026 Minseo Kim</footer>
+</body></html>
